@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 {-|
 Module      : Lion.Instruction
 Description : RISC-V ISA
@@ -8,7 +10,11 @@ Maintainer  : standardsemiconductor@gmail.com
 
 module Lion.Instruction where
 
+#if __GLASGOW_HASKELL__ > 902
+import Clash.Prelude hiding (Xor(Xor), And(And))
+#else
 import Clash.Prelude
+#endif
 import Data.Function ( on )
 
 data Exception = IllegalInstruction
@@ -26,7 +32,7 @@ data WbInstr = WbRegWr (Unsigned 5) (BitVector 32)
 -- | Memory pipeline instruction
 data MeInstr = MeRegWr      (Unsigned 5)
              | MeJump       (Unsigned 5) (BitVector 32)
-             | MeBranch 
+             | MeBranch
              | MeStore                   (BitVector 32) (BitVector 4) (BitVector 32)
              | MeLoad  Load (Unsigned 5) (BitVector 32) (BitVector 4)
              | MeNop
@@ -155,7 +161,7 @@ parseInstr i = case i of
 
     immI :: BitVector 32
     immI = signExtend $ slice d31 d20 i
-    
+
     immS :: BitVector 32
     immS = signExtend $ slice d31 d25 i ++# slice d11 d7 i
 
@@ -164,7 +170,7 @@ parseInstr i = case i of
 
     immU :: BitVector 32
     immU = slice d31 d12 i ++# 0
-    
+
     immJ :: BitVector 32
     immJ = signExtend (slice d31 d31 i ++# slice d19 d12 i ++# slice d20 d20 i ++# slice d30 d25 i ++# slice d24 d21 i) `shiftL` 1
 
